@@ -1,0 +1,133 @@
+ID: sample
+_schema-version: '2.1'
+parameters:
+  deploy_mode: html5-repo
+version: 0.0.1
+modules:
+  - name: sample-approuter
+    type: approuter.nodejs
+    path: sample-approuter
+    parameters:
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: sample_html5_repo_runtime
+      - name: srv_api
+        group: destinations
+        properties:
+          forwardAuthToken: true
+          name: srv_api
+          url: '~{url}'
+      - name: uaa_sample
+      - name: portal_resources_sample
+  - name: sample_ui_deployer
+    type: com.sap.html5.application-content
+    path: sample_ui_deployer
+    requires:
+      - name: sample_html5_repo_host
+    build-parameters:
+      requires:
+        - name: books
+          artifacts:
+            - './*'
+          target-path: resources/books
+        - name: authors
+          artifacts:
+            - './*'
+          target-path: resources/authors
+  - name: sample-db
+    type: hdb
+    path: db
+    parameters:
+      memory: 256M
+      disk-quota: 512M
+    requires:
+      - name: sample-db-hdi-container
+  - name: sample-srv
+    type: java
+    path: srv
+    parameters:
+      memory: 1024M
+    provides:
+      - name: srv_api
+        properties:
+          url: '${default-url}'
+    requires:
+      - name: sample-db-hdi-container
+        properties:
+          JBP_CONFIG_RESOURCE_CONFIGURATION: '[tomcat/webapps/ROOT/META-INF/context.xml: {"service_name_for_DefaultDB" : "~{hdi-container-name}"}]'
+      - name: sample-uaa
+  - name: books
+    type: html5
+    path: books
+    build-parameters:
+      builder: custom
+      commands:
+        - npm install
+        - npm run build
+      supported-platforms: []
+      build-result: dist
+    requires:
+      - name: srv_api
+        group: destinations
+        properties:
+          forwardAuthToken: true
+          strictSSL: false
+          name: srv_api
+          url: '~{url}'
+  - name: authors
+    type: html5
+    path: app/authors
+    build-parameters:
+      builder: custom
+      commands:
+        - npm install
+        - npm run build
+      supported-platforms: []
+      build-result: dist
+    requires:
+      - name: srv_api
+        group: destinations
+        properties:
+          forwardAuthToken: true
+          strictSSL: false
+          name: srv_api
+          url: '~{url}'
+  - name: flp
+    type: com.sap.portal.content
+    path: flp
+    parameters:
+      stack: cflinuxfs3
+      memory: 128M
+      buildpack: 'https://github.com/cloudfoundry/nodejs-buildpack/releases/download/v1.6.39/nodejs-buildpack-cflinuxfs3-v1.6.39.zip'
+    requires:
+      - name: portal_resources_sample
+      - name: uaa_sample
+      - name: sample_html5_repo_host
+      - name: sample_ui_deployer
+resources:
+  - name: sample_html5_repo_runtime
+    parameters:
+      service-plan: app-runtime
+      service: html5-apps-repo
+    type: org.cloudfoundry.managed-service
+  - name: sample_html5_repo_host
+    parameters:
+      service-plan: app-host
+      service: html5-apps-repo
+    type: org.cloudfoundry.managed-service
+  - name: sample-db-hdi-container
+    type: com.sap.xs.hdi-container
+    properties:
+      hdi-container-name: '${service-name}'
+  - name: sample-uaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service-plan: application
+      service: xsuaa
+      path: ./xs-security.json
+  - name: portal_resources_sample
+    parameters:
+      service-plan: standard
+      service: portal
+    type: org.cloudfoundry.managed-service
