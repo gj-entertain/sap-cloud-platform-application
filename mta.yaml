@@ -12,6 +12,7 @@ modules:
       memory: 256M
     requires:
       - name: sample_html5_repo_runtime
+      - name: portal_resources_sample
       - name: srv_api
         group: destinations
         properties:
@@ -19,7 +20,6 @@ modules:
           name: srv_api
           url: '~{url}'
       - name: uaa_sample
-      - name: portal_resources_sample
   - name: sample_ui_deployer
     type: com.sap.html5.application-content
     path: sample_ui_deployer
@@ -120,14 +120,20 @@ resources:
     type: com.sap.xs.hdi-container
     properties:
       hdi-container-name: '${service-name}'
-  - name: sample-uaa
+  - name: uaa_sample
     type: org.cloudfoundry.managed-service
     parameters:
       service-plan: application
       service: xsuaa
-      path: ./xs-security.json
+      path: xs-security.json
   - name: portal_resources_sample
     parameters:
       service-plan: standard
       service: portal
     type: org.cloudfoundry.managed-service
+  - name: sample-uaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service-plan: application
+      service: xsuaa
+      path: xs-security.json

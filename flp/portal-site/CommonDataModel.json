@@ -30,6 +30,10 @@
 					"id": "sample.authors-0-1591766929410",
 					"appId": "sample.authors",
 					"vizId": "Authors-action1"
+				}, {
+					"id": "sample.books-1-1591861527738",
+					"appId": "sample.books",
+					"vizId": "Books-action1"
 				}]
 			}
 		}],

@@ -36,7 +36,10 @@
 					"semanticObject": "Books",
 					"action": "action1",
 					"title": "Books",
-					"icon": "sap-icon://course-book"
+					"icon": "sap-icon://course-book",
+					"indicatorDataSource": {
+						"dataSource": "mainService"
+					}
 				}
 			}
 		}
